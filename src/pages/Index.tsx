@@ -3,9 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { useToast } from '@/hooks/use-toast';
 
 interface Nomination {
   id: number;
@@ -30,7 +28,6 @@ const VK_APP_ID = '52755728';
 const API_BASE = 'https://functions.poehali.dev';
 
 const Index = () => {
-  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [nominations, setNominations] = useState<Nomination[]>([]);
   const [loading, setLoading] = useState(false);
@@ -80,26 +77,15 @@ const Index = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Голос учтён! 🔥",
-          description: "Спасибо за участие в премии SLIU 2025",
-        });
+        alert('Голос учтён! 🔥');
         await loadNominations();
       } else if (response.status === 409) {
-        toast({
-          title: "Уже проголосовали",
-          description: "Вы уже голосовали за эту номинацию",
-          variant: "destructive",
-        });
+        alert('Вы уже голосовали за эту номинацию');
       } else {
         throw new Error(data.error || 'Ошибка голосования');
       }
     } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось проголосовать. Попробуйте позже.",
-        variant: "destructive",
-      });
+      alert('Не удалось проголосовать. Попробуйте позже.');
     } finally {
       setLoading(false);
     }
@@ -108,10 +94,7 @@ const Index = () => {
   const handleLogout = () => {
     localStorage.removeItem('sliu_user');
     setUser(null);
-    toast({
-      title: "Вы вышли",
-      description: "До скорых встреч!",
-    });
+    alert('Вы вышли из аккаунта');
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -123,23 +106,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent className="bg-card border-2 border-primary/50">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Авторизация через ВКонтакте</DialogTitle>
-            <DialogDescription>
-              Войдите через ВК, чтобы голосовать за номинантов
-            </DialogDescription>
-          </DialogHeader>
-          <Button 
-            onClick={handleVKLogin} 
-            className="w-full bg-[#0077FF] hover:bg-[#0066DD] text-white text-lg py-6"
-          >
-            <Icon name="LogIn" size={20} className="mr-2" />
-            Войти через ВКонтакте
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {showAuthDialog && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowAuthDialog(false)}>
+          <div className="bg-card border-2 border-primary/50 rounded-lg p-8 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-2xl font-bold mb-2">Авторизация через ВКонтакте</h2>
+            <p className="text-muted-foreground mb-6">Войдите через ВК, чтобы голосовать за номинантов</p>
+            <Button 
+              onClick={handleVKLogin} 
+              className="w-full bg-[#0077FF] hover:bg-[#0066DD] text-white text-lg py-6"
+            >
+              <Icon name="LogIn" size={20} className="mr-2" />
+              Войти через ВКонтакте
+            </Button>
+          </div>
+        </div>
+      )}
 
       <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4">
